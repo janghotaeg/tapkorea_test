@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>TapKorea — Explore</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="map-page">
+
+  <!-- ── TOP HEADER ── -->
+  <header class="app-header" id="appHeader">
+    <div class="app-header-inner">
+      <div class="app-header-left">
+        <span class="app-logo-icon">🇰🇷</span>
+        <span class="app-logo-name">TapKorea</span>
+      </div>
+      <div class="app-header-right">
+        <button class="icon-btn" id="langToggleBtn" aria-label="Change language"
+                onclick="openLangPicker()">
+          <span id="currentFlagDisplay">🌐</span>
+        </button>
+        <button class="icon-btn" aria-label="Notifications"><span>🔔</span></button>
+      </div>
+    </div>
+    <div class="search-bar-wrap">
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="search" class="search-input" id="searchInput"
+               placeholder="Search locations…"
+               oninput="handleSearch(this.value)"
+               autocomplete="off" />
+        <button class="search-clear" id="searchClear" onclick="clearSearch()" aria-label="Clear">✕</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── FULL-SCREEN LEAFLET MAP ── -->
+  <div id="map"></div>
+
+  <!-- ── REGION FAB ── -->
+  <button class="fab-regions" id="fabRegions" onclick="openRegionSheet()" aria-label="Select region">
+    <span class="fab-icon">🗺️</span>
+    <span class="fab-label" data-i18n="fab_regions">Regions</span>
+  </button>
+
+  <!-- ── BOTTOM NAV ── -->
+  <nav class="bottom-nav" role="navigation" aria-label="Main navigation">
+    <button class="nav-item active" onclick="setNavTab('explore')" aria-label="Explore">
+      <span class="nav-icon">🗺️</span>
+      <span class="nav-label" data-i18n="nav_explore">Explore</span>
+    </button>
+    <button class="nav-item" onclick="setNavTab('scan')" aria-label="Scan NFC">
+      <span class="nav-icon nav-scan-icon">📲</span>
+      <span class="nav-label" data-i18n="nav_scan">Scan</span>
+    </button>
+    <button class="nav-item" onclick="setNavTab('saved')" aria-label="Saved">
+      <span class="nav-icon">🔖</span>
+      <span class="nav-label" data-i18n="nav_saved">Saved</span>
+    </button>
+    <button class="nav-item" onclick="setNavTab('profile')" aria-label="Profile">
+      <span class="nav-icon">👤</span>
+      <span class="nav-label" data-i18n="nav_profile">Profile</span>
+    </button>
+  </nav>
+
+  <!-- ── REGION SELECTION SHEET ── -->
+  <div class="sheet-backdrop" id="regionBackdrop" onclick="closeRegionSheet()"></div>
+  <div class="bottom-sheet region-bottom-sheet" id="regionSheet">
+    <div class="sheet-handle"></div>
+    <div class="region-sheet-inner">
+      <div class="region-sheet-header">
+        <h2 class="region-sheet-title" data-i18n="select_region">Select Region</h2>
+        <button class="modal-close-btn" onclick="closeRegionSheet()">✕</button>
+      </div>
+      <div class="region-grid" id="regionGrid">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LOCATION / ROUTE / EVENT / PARTNER DETAIL SHEET ── -->
+  <div class="sheet-backdrop" id="sheetBackdrop" onclick="closeSheet()"></div>
+  <div class="bottom-sheet" id="bottomSheet">
+    <div class="sheet-handle"></div>
+    <!-- Full-bleed image header — shown/hidden and populated by JS -->
+    <div id="sheetImgHeader" class="detail-img-header"></div>
+    <div class="sheet-content" id="sheetContent"></div>
+  </div>
+
+  <!-- ── LANGUAGE PICKER MODAL ── -->
+  <div class="modal-backdrop" id="langModalBackdrop" onclick="closeLangPicker()"></div>
+  <div class="lang-modal" id="langModal">
+    <div class="lang-modal-header">
+      <h3 data-i18n="change_language">Change Language</h3>
+      <button class="modal-close-btn" onclick="closeLangPicker()">✕</button>
+    </div>
+    <div class="lang-modal-list">
+      <button class="lang-modal-item" data-lang="ko" onclick="switchLanguage('ko')">
+        <span>🇰🇷</span><span>한국어</span>
+      </button>
+      <button class="lang-modal-item" data-lang="en" onclick="switchLanguage('en')">
+        <span>🇺🇸</span><span>English</span>
+      </button>
+      <button class="lang-modal-item" data-lang="zh" onclick="switchLanguage('zh')">
+        <span>🇨🇳</span><span>中文</span>
+      </button>
+      <button class="lang-modal-item" data-lang="ja" onclick="switchLanguage('ja')">
+        <span>🇯🇵</span><span>日本語</span>
+      </button>
+      <button class="lang-modal-item" data-lang="fr" onclick="switchLanguage('fr')">
+        <span>🇫🇷</span><span>Français</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── SEARCH RESULTS PANEL ── -->
+  <div class="search-panel" id="searchPanel">
+    <div class="search-panel-top">
+      <div class="search-filter-chips" id="searchFilterChips"></div>
+      <div class="search-result-count" id="searchResultCount"></div>
+    </div>
+    <div class="search-result-list" id="searchResultList"></div>
+  </div>
+
+  <!-- ── TOAST ── -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ── REVIEWER ROUTE BAR ── -->
+  <div class="review-route-bar" id="reviewRouteBar">
+    <div class="rrb-reviewer"></div>
+    <button class="rrb-close-btn" onclick="clearReviewerRoute()" aria-label="Close route">✕</button>
+  </div>
+
+  <!-- ── ROUTE PREVIEW PANEL ── -->
+  <div class="route-preview-panel" id="routePreviewPanel">
+    <div class="rpp-top">
+      <div class="rpp-title" id="routePreviewTitle">Route Preview</div>
+      <button class="rpp-close" onclick="stopRoutePreview()" aria-label="Close preview">✕</button>
+    </div>
+    <div class="rpp-meta" id="routePreviewMeta">-</div>
+    <button class="rpp-start-btn" id="routePreviewStartBtn" onclick="startNavigationFromPreview()">안내 시작</button>
+  </div>
+
+  <!-- ── NAVIGATION GUIDE PANEL ── -->
+  <div class="nav-instruction-bar" id="navInstructionBar">
+    <div class="nib-distance" id="navInstructionDistance">-</div>
+    <div class="nib-text" id="navInstructionText">Continue straight</div>
+  </div>
+  <div class="nav-guide-panel" id="navGuidePanel">
+    <div class="ngp-top">
+      <div>
+        <div class="ngp-title" id="navGuideTitle">Navigation</div>
+        <div class="ngp-progress-text" id="navProgressText">Stop 1 / 1</div>
+      </div>
+      <button class="ngp-close" onclick="stopActiveNavigation()" aria-label="Close navigation">✕</button>
+    </div>
+    <div class="ngp-progress-bar"><div class="ngp-progress-fill" id="navProgressFill"></div></div>
+    <div class="ngp-body">
+      <div class="ngp-row ngp-row-primary"><span class="ngp-k">현재</span><span class="ngp-v" id="navCurrentDest">-</span></div>
+      <div class="ngp-row"><span class="ngp-k">다음</span><span class="ngp-v" id="navNextDest">-</span></div>
+      <div class="ngp-stat-grid">
+        <div class="ngp-stat-card">
+          <span class="ngp-stat-label">남은 시간</span>
+          <strong class="ngp-stat-value" id="navRemainingTime">-</strong>
+        </div>
+        <div class="ngp-stat-card">
+          <span class="ngp-stat-label">남은 거리</span>
+          <strong class="ngp-stat-value" id="navRemainingDistance">-</strong>
+        </div>
+      </div>
+      <div class="ngp-row"><span class="ngp-k">구간</span><span class="ngp-v" id="navSegmentMeta">-</span></div>
+      <div class="ngp-row"><span class="ngp-k">총합</span><span class="ngp-v" id="navTotalMeta">-</span></div>
+    </div>
+    <div class="ngp-actions">
+      <button class="ngp-next-btn" id="navNextBtn" onclick="goToNextNavigationStop()">다음 목적지</button>
+      <button class="ngp-exit-btn" onclick="stopActiveNavigation()">종료</button>
+    </div>
+  </div>
+
+  <!-- ── NFC SCANNER SHEET ── -->
+  <div class="sheet-backdrop nfc-scan-backdrop" id="nfcScanBackdrop" onclick="closeNfcScanner()"></div>
+  <div class="bottom-sheet nfc-scan-sheet" id="nfcScanSheet">
+    <div class="sheet-handle"></div>
+    <div class="nfc-scan-inner" id="nfcScanInner">
+      <!-- rendered by JS -->
+    </div>
+  </div>
+
+  <!-- ── NFC DETAIL PAGE (full-screen overlay) ── -->
+  <div class="nfc-detail-page" id="nfcDetailPage">
+    <div class="nfc-detail-inner" id="nfcDetailInner">
+      <!-- rendered by JS -->
+    </div>
+  </div>
+
+  <!-- ── MY PLAN SHEET ── -->
+  <div class="sheet-backdrop my-plan-backdrop" id="myPlanBackdrop" onclick="closeMyPlanSheet()"></div>
+  <div class="bottom-sheet my-plan-sheet" id="myPlanSheet">
+    <div class="sheet-handle"></div>
+    <div class="my-plan-inner" id="myPlanInner">
+      <!-- rendered by JS -->
+    </div>
+  </div>
+
+  <!-- ── TRIP REVIEW OVERLAY ── -->
+  <div class="trip-review-overlay" id="tripReviewOverlay">
+    <div class="trip-review-inner" id="tripReviewInner">
+      <!-- rendered by JS -->
+    </div>
+  </div>
+
+  <!-- ── QUIZ OVERLAY ── -->
+  <div class="quiz-overlay" id="quizOverlay">
+    <div class="quiz-inner" id="quizInner">
+      <!-- rendered by JS -->
+    </div>
+  </div>
+
+  <!-- Transition overlay -->
+  <div class="transition-overlay active" id="transitionOverlay"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+  <script>
+    // Guard: must have language selected
+    (function () {
+      if (!localStorage.getItem('tapkorea_lang')) {
+        window.location.replace('index.html');
+      }
+    })();
+
+    // Fade in and init map
+    window.addEventListener('load', function () {
+      const overlay = document.getElementById('transitionOverlay');
+      requestAnimationFrame(function () { overlay.classList.remove('active'); });
+      initMap();
+    });
+  </script>
+</body>
+</html>
