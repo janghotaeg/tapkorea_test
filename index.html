@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>TapKorea — Select Language</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="lang-select-page">
+
+  <div class="lang-bg">
+    <div class="lang-bg-circle c1"></div>
+    <div class="lang-bg-circle c2"></div>
+    <div class="lang-bg-circle c3"></div>
+  </div>
+
+  <main class="lang-container">
+
+    <header class="lang-header">
+      <div class="lang-logo">
+        <span class="lang-logo-icon">🇰🇷</span>
+        <span class="lang-logo-text">TapKorea</span>
+      </div>
+      <p class="lang-tagline">Discover Korea with a single tap</p>
+    </header>
+
+    <section class="lang-prompt">
+      <h1 class="lang-title">Choose your language</h1>
+      <p class="lang-subtitle">언어를 선택하세요 · 请选择语言 · 言語を選択</p>
+    </section>
+
+    <div class="lang-grid" role="list">
+
+      <button class="lang-btn" data-lang="ko" data-name="한국어" role="listitem"
+              onclick="selectLanguage('ko')">
+        <span class="lang-flag">🇰🇷</span>
+        <span class="lang-native">한국어</span>
+        <span class="lang-english">Korean</span>
+        <span class="lang-arrow">→</span>
+      </button>
+
+      <button class="lang-btn" data-lang="en" data-name="English" role="listitem"
+              onclick="selectLanguage('en')">
+        <span class="lang-flag">🇺🇸</span>
+        <span class="lang-native">English</span>
+        <span class="lang-english">English</span>
+        <span class="lang-arrow">→</span>
+      </button>
+
+      <button class="lang-btn" data-lang="zh" data-name="中文" role="listitem"
+              onclick="selectLanguage('zh')">
+        <span class="lang-flag">🇨🇳</span>
+        <span class="lang-native">中文</span>
+        <span class="lang-english">Chinese</span>
+        <span class="lang-arrow">→</span>
+      </button>
+
+      <button class="lang-btn" data-lang="ja" data-name="日本語" role="listitem"
+              onclick="selectLanguage('ja')">
+        <span class="lang-flag">🇯🇵</span>
+        <span class="lang-native">日本語</span>
+        <span class="lang-english">Japanese</span>
+        <span class="lang-arrow">→</span>
+      </button>
+
+      <button class="lang-btn" data-lang="fr" data-name="Français" role="listitem"
+              onclick="selectLanguage('fr')">
+        <span class="lang-flag">🇫🇷</span>
+        <span class="lang-native">Français</span>
+        <span class="lang-english">French</span>
+        <span class="lang-arrow">→</span>
+      </button>
+
+    </div>
+
+    <footer class="lang-footer">
+      <p>You can change language anytime in settings</p>
+    </footer>
+
+  </main>
+
+  <!-- Transition overlay -->
+  <div class="transition-overlay" id="transitionOverlay"></div>
+
+  <script src="app.js"></script>
+  <script>
+    // If language already saved, skip directly to map
+    (function () {
+      const saved = localStorage.getItem('tapkorea_lang');
+      if (saved) {
+        window.location.replace('map.html');
+      }
+    })();
+
+    function selectLanguage(lang) {
+      const btn = document.querySelector(`[data-lang="${lang}"]`);
+      if (btn) {
+        // Visual feedback
+        document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+      }
+
+      // Save to localStorage
+      localStorage.setItem('tapkorea_lang', lang);
+
+      // Animate out and navigate
+      const overlay = document.getElementById('transitionOverlay');
+      overlay.classList.add('active');
+      setTimeout(() => {
+        window.location.href = 'map.html';
+      }, 400);
+    }
+  </script>
+</body>
+</html>
